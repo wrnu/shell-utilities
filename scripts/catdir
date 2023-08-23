@@ -1,0 +1,66 @@
+#!/bin/bash
+
+function display_help() {
+    echo "Usage: catdir [OPTIONS]"
+    echo
+    echo "Utility to display contents of files in the current directory based on specific patterns."
+    echo
+    echo "Options:"
+    echo "  -e <pattern>      Exclude files matching the pattern."
+    echo "  -i <pattern>      Include only files that match the pattern. Multiple patterns can be specified."
+    echo "  -h                Display this help message and exit."
+    echo
+    echo "Examples:"
+    echo "  catdir -e './.git/*'                      Exclude files in the .git directory."
+    echo "  catdir -i '*.txt' -i '*.md'               Only include .txt and .md files."
+    echo "  catdir -e './.git/*' -i '*.txt'           Exclude .git directory and only include .txt files."
+    echo
+}
+
+exclusions=""
+inclusions=""
+include_only=false
+
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+        -e)
+            shift
+            exclusions="${exclusions} ! -path '$1'"
+            shift
+            ;;
+        -i)
+            include_only=true
+            shift
+            [ -z "${inclusions}" ] && inclusions="-path '$1'" || inclusions="${inclusions} -o -path '$1'"
+            shift
+            ;;
+        -h)
+            display_help
+            exit 0
+            ;;
+        *)
+            # Handle unexpected input
+            echo "Unexpected argument: $1"
+            echo "Use -h for help."
+            exit 1
+            ;;
+    esac
+done
+
+if $include_only && [ -z "${inclusions}" ]; then
+    echo "You specified -i without any pattern."
+    exit 1
+fi
+
+find_cmd="find . -type f"
+
+[ -n "${exclusions}" ] && find_cmd="${find_cmd} ${exclusions}"
+$include_only && find_cmd="${find_cmd} \( ${inclusions} \)"
+
+echo "Constructed find command: $find_cmd"  # Let's print out the constructed command
+
+eval "${find_cmd}" | while IFS= read -r file; do
+    echo "=====${file}====="
+    cat "$file"
+    echo
+done
