@@ -6,23 +6,32 @@ function display_help() {
     echo "Utility to display contents of files in the current directory based on specific patterns."
     echo
     echo "Options:"
+    echo "  -d <directory>    Specify the directory to operate on. If not provided, use the current directory."
     echo "  -e <pattern>      Exclude files matching the pattern."
     echo "  -i <pattern>      Include only files that match the pattern. Multiple patterns can be specified."
+    echo "  -g                Include .git/*"
     echo "  -h                Display this help message and exit."
     echo
     echo "Examples:"
-    echo "  catdir -e './.git/*'                      Exclude files in the .git directory."
-    echo "  catdir -i '*.txt' -i '*.md'               Only include .txt and .md files."
-    echo "  catdir -e './.git/*' -i '*.txt'           Exclude .git directory and only include .txt files."
+    echo "  catdir -d '/home/user/documents'       Operate on /home/user/documents directory."
+    echo "  catdir -i '*.txt' -i '*.md'            Only include .txt and .md files."
+    echo "  catdir -e './.git/*' -i '*.txt'        Exclude .git directory and only include .txt files."
+    echo "  catdir -g                              Include .git/*"
     echo
 }
 
-exclusions=""
+exclusions="! -path '**/.git/**'"
 inclusions=""
 include_only=false
+directory="."
 
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
+        -d)
+            shift
+            directory="$1"
+            shift
+            ;;
         -e)
             shift
             exclusions="${exclusions} ! -path '$1'"
@@ -32,6 +41,10 @@ while [[ "$#" -gt 0 ]]; do
             include_only=true
             shift
             [ -z "${inclusions}" ] && inclusions="-path '$1'" || inclusions="${inclusions} -o -path '$1'"
+            shift
+            ;;
+        -g)
+            exclusions=""
             shift
             ;;
         -h)
@@ -52,7 +65,7 @@ if $include_only && [ -z "${inclusions}" ]; then
     exit 1
 fi
 
-find_cmd="find . -type f"
+find_cmd="find ${directory} -type f"
 
 [ -n "${exclusions}" ] && find_cmd="${find_cmd} ${exclusions}"
 $include_only && find_cmd="${find_cmd} \( ${inclusions} \)"
