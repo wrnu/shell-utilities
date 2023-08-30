@@ -6,18 +6,18 @@ function display_help() {
     echo "Utility to display contents of files in the current directory based on specific patterns."
     echo
     echo "Options:"
-    echo "  -d <directory>    Specify the directory to operate on. If not provided, use the current directory."
-    echo "  -e <pattern>      Exclude files matching the pattern."
-    echo "  -i <pattern>      Include only files that match the pattern. Multiple patterns can be specified."
-    echo "  -g                Include .git/*"
-    echo "  -h                Display this help message and exit."
-    echo "  --logo            Output a cat emoji and a folder emoji."
+    echo "  -d, --directory <directory>    Specify the directory to operate on. If not provided, use the current directory."
+    echo "  -e, --exclude <pattern>        Exclude files matching the pattern."
+    echo "  -i, --include <pattern>        Include only files that match the pattern. Multiple patterns can be specified."
+    echo "  -g, --git                      Include .git/*"
+    echo "  -h, --help                     Display this help message and exit."
+    echo "      --logo                     Output a cat emoji and a folder emoji."
     echo
     echo "Examples:"
-    echo "  catdir -d '/home/user/documents'       Operate on /home/user/documents directory."
-    echo "  catdir -i '*.txt' -i '*.md'            Only include .txt and .md files."
-    echo "  catdir -e './.git/*' -i '*.txt'        Exclude .git directory and only include .txt files."
-    echo "  catdir -g                              Include .git/*"
+    echo "  catdir --directory '/home/user/documents'       Operate on /home/user/documents directory."
+    echo "  catdir --include '*.txt' --include '*.md'       Only include .txt and .md files."
+    echo "  catdir --exclude './.git/*' --include '*.txt'   Exclude .git directory and only include .txt files."
+    echo "  catdir --git                                   Include .git/*"
     echo
 }
 
@@ -28,27 +28,27 @@ directory="."
 
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
-        -d)
+        -d|--directory)
             shift
             directory="$1"
             shift
             ;;
-        -e)
+        -e|--exclude)
             shift
             exclusions="${exclusions} ! -path '$1'"
             shift
             ;;
-        -i)
+        -i|--include)
             include_only=true
             shift
             [ -z "${inclusions}" ] && inclusions="-path '$1'" || inclusions="${inclusions} -o -path '$1'"
             shift
             ;;
-        -g)
+        -g|--git)
             exclusions=""
             shift
             ;;
-        -h)
+        -h|--help)
             display_help
             exit 0
             ;;
