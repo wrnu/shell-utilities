@@ -53,7 +53,7 @@ while [[ "$#" -gt 0 ]]; do
             exit 0
             ;;
         --logo)
-            echo "🐱📁"  # Output cat emoji and folder emoji
+            echo "🐱📁"
             exit 0
             ;;
         *)
