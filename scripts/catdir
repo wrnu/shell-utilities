@@ -17,7 +17,7 @@ function display_help() {
     echo "  catdir --directory '/home/user/documents'       Operate on /home/user/documents directory."
     echo "  catdir --include '*.txt' --include '*.md'       Only include .txt and .md files."
     echo "  catdir --exclude './.git/*' --include '*.txt'   Exclude .git directory and only include .txt files."
-    echo "  catdir --git                                   Include .git/*"
+    echo "  catdir --git                                    Include .git/*"
     echo
 }
 
