@@ -1,0 +1,53 @@
+# .gitignore for Python project using venv
+
+# Ignore venv virtual environment
+.venv/
+venv/
+
+# Ignore any compiled Python files
+*.pyc
+*.pyo
+__pycache__/
+
+# Ignore the pipenv virtual environment
+.pipenv/
+
+# Ignore environment variables used by pipenv
+.env
+
+# Ignore any local development settings
+*.env
+
+# Ignore any backup or temporary files
+*~
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# Ignore system specific files
+.DS_Store
+Thumbs.db
+
+# Ignore any logs or log files
+logs/
+*.log
+
+# Ignore any test or coverage files/directories
+/.pytest_cache/
+/coverage/
+/htmlcov/
+
+# Ignore any generated documentation
+/docs/
+
+# Ignore any local database files
+*.db
+
+# Ignore any package installation details
+pip-lock.txt
+pipfile.lock
+
+# Ignore any IDE specific files or directories
+.idea/
+.vscode/
