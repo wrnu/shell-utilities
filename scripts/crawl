@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import requests
+from bs4 import BeautifulSoup
+from markdownify import markdownify
+from urllib.parse import urljoin, urlparse
+import argparse
+
+
+def convert_to_markdown(html_content, base_url):
+    soup = BeautifulSoup(html_content, 'html.parser')
+
+    # Remove script and style tags, which might contain JSON or CSS data
+    for element in soup.find_all(['script', 'style']):
+        element.decompose()
+
+    # Convert the cleaned-up HTML content to a string
+    cleaned_html_content = str(soup)
+
+    # Convert the cleaned-up HTML content to markdown
+    markdown_content = markdownify(cleaned_html_content)
+
+    separator = f"\n\n===== URL: {base_url} =====\n\n"
+    return separator + markdown_content
+
+
+def fetch_page_content(url, visited_urls):
+    if url in visited_urls:
+        return None
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        visited_urls.add(url)
+        return response.text
+    except Exception as e:
+        print(f"Error fetching URL {url}: {e}", file=sys.stderr)
+        return None
+
+
+def get_links(html_content, base_url, path_prefix, max_depth):
+    soup = BeautifulSoup(html_content, 'html.parser')
+    links = []
+    for link in soup.find_all('a'):
+        href = link.get('href')
+        if href:
+            full_url = urljoin(base_url, href)
+            depth = len(urlparse(full_url).path.strip('/').split('/')) - len(path_prefix.strip('/').split('/'))
+            if full_url.startswith(urljoin(base_url, path_prefix)) and depth <= max_depth:
+                links.append(full_url)
+    return links
+
+
+def main(args):
+    url = args.url
+    max_depth = args.depth
+
+    parsed_url = urlparse(url)
+    base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+    path_prefix = parsed_url.path
+    if not path_prefix.endswith('/'):
+        path_prefix += '/'
+
+    visited_urls = set()
+
+    print(f"Base URL: {base_url}")
+    print(f"Path Prefix: {path_prefix}")
+
+    html_content = fetch_page_content(url, visited_urls)
+    if html_content:
+        print(convert_to_markdown(html_content, url))
+
+        # Fetch and convert content from all linked pages
+        for link in get_links(html_content, base_url, path_prefix, max_depth):
+            link_content = fetch_page_content(link, visited_urls)
+            if link_content:
+                print(convert_to_markdown(link_content, link))
+    else:
+        print("Failed to fetch the main page.", file=sys.stderr)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Crawl a website and convert pages to markdown.')
+    parser.add_argument('url', help='The URL to start crawling from.')
+    parser.add_argument('-d', '--depth', type=int, default=1, help='The maximum depth to crawl.')
+    args = parser.parse_args()
+
+    main(args)
